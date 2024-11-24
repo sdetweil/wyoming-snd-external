@@ -89,11 +89,8 @@ class ExternalEventHandler(AsyncEventHandler):
         _LOGGER.debug("Client connected: %s", self.client_id)
 
     async def handle_event(self, event: Event) -> bool:
-        if AudioStart.is_type(event.type):
-            await self._start_proc()
-        elif AudioStop.is_type(event.type):
-            await self.write_event(Played().event())
-        elif AudioChunk.is_type(event.type):
+
+        if AudioChunk.is_type(event.type):
             await self._start_proc()
 
             chunk = AudioChunk.from_event(event)
@@ -104,6 +101,11 @@ class ExternalEventHandler(AsyncEventHandler):
 
             self._proc.stdin.write(chunk.audio)
             await self._proc.stdin.drain()
+
+        elif AudioStop.is_type(event.type):
+            await self.write_event(Played().event())
+        elif AudioStart.is_type(event.type):
+            await self._start_proc()
 
         return True
 
@@ -117,6 +119,8 @@ class ExternalEventHandler(AsyncEventHandler):
             self.command[0], *self.command[1:], stdin=asyncio.subprocess.PIPE
         )
         assert self._proc.stdin is not None
+        // wait a little til the process starts
+        await asyncio.sleep(1)
 
     async def _stop_proc(self) -> None:
         if self._proc is None:
