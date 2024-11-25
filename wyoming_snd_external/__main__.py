@@ -119,7 +119,7 @@ class ExternalEventHandler(AsyncEventHandler):
             self.command[0], *self.command[1:], stdin=asyncio.subprocess.PIPE
         )
         assert self._proc.stdin is not None
-        // wait a little til the process starts
+        # wait a little til the process starts
         await asyncio.sleep(1)
 
     async def _stop_proc(self) -> None:
